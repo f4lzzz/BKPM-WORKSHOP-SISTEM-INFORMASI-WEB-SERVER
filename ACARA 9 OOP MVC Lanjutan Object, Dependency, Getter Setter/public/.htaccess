@@ -1,0 +1,7 @@
+RewriteEngine On
+
+RewriteBase /BKPM%20WORKSHOP%20SISTEM%20INFORMASI%20WEB%20SERVER/ACARA%209%20OOP%20MVC%20Lanjutan%20Object,%20Dependency,%20Getter%20Setter/public/
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

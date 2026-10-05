@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /BKPM%20WORKSHOP%20SISTEM%20INFORMASI%20WEB%20SERVER/ACARA%208%20PDO,%20Prepared%20Statement,%20Relasi,%20dan%20CRUD%20Lengkap/public/
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
