@@ -1,0 +1,157 @@
+﻿{
+  "info": {
+    "name": "Acara 16 - RESTful API Mahasiswa",
+    "description": "Collection pengujian RESTful API mahasiswa: GET, POST, PUT, DELETE, dan validasi error.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost/BKPM%20WORKSHOP%20SISTEM%20INFORMASI%20WEB%20SERVER/ACARA%2016%20Restful%20API%20endpoint%20request%20response/api/mahasiswa"
+    },
+    {
+      "key": "id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET - Semua Mahasiswa",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}"
+      }
+    },
+    {
+      "name": "GET - Mahasiswa Berdasarkan ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/{{id}}"
+      }
+    },
+    {
+      "name": "POST - Tambah Mahasiswa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"23006\",\n  \"nama\": \"Rina\",\n  \"email\": \"rina@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}"
+      }
+    },
+    {
+      "name": "PUT - Ubah Mahasiswa",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"23001\",\n  \"nama\": \"Budi Santoso\",\n  \"email\": \"budi.santoso@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/1"
+      }
+    },
+    {
+      "name": "DELETE - Hapus Mahasiswa",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/4"
+      }
+    },
+    {
+      "name": "ERROR - ID Tidak Ditemukan",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/999"
+      }
+    },
+    {
+      "name": "ERROR - NIM Kosong",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"\",\n  \"nama\": \"Test\",\n  \"email\": \"test@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}"
+      }
+    },
+    {
+      "name": "ERROR - Email Tidak Valid",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"23007\",\n  \"nama\": \"Test\",\n  \"email\": \"email-salah\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}"
+      }
+    },
+    {
+      "name": "ERROR - JSON Tidak Valid",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nim\":\"23008\",\"nama\":",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}"
+      }
+    }
+  ]
+}
