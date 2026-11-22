@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Acara 25</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #1e293b;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h2 {
+            font-size: 20px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .summary {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .summary h3 {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .summary h1 {
+            font-size: 35px;
+            color: #2563eb;
+        }
+
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 550px;
+        }
+
+        th, td {
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 7px 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+        }
+
+        .status {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 18px;
+            }
+
+            header h2 {
+                font-size: 16px;
+            }
+
+            main {
+                margin-top: 25px;
+            }
+
+            .table-container {
+                padding: 15px;
+            }
+
+            .table-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2>Dashboard Mahasiswa</h2>
+        <button class="logout-btn" id="btn-logout">Logout</button>
+    </header>
+
+    <main>
+        <section class="welcome">
+            <h2>Selamat Datang, <span id="nama-user">Pengguna</span>!</h2>
+            <p>Role: <strong id="role-user"></strong></p>
+        </section>
+
+        <section class="summary">
+            <h3>Total Mahasiswa</h3>
+            <h1 id="total-mahasiswa">0</h1>
+        </section>
+
+        <section class="table-container">
+            <div class="table-header">
+                <h3>Data Mahasiswa</h3>
+
+                <button class="add-btn admin-only" id="btn-tambah">
+                    + Tambah Mahasiswa
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>NIM</th>
+                        <th>Nama</th>
+                        <th>Program Studi</th>
+                        <th class="admin-only">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabel-mahasiswa">
+                    <tr>
+                        <td colspan="5">Memuat data mahasiswa...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="status" id="status"></p>
+        </section>
+    </main>
+
+    <script src="dashboard.js"></script>
+
+</body>
+</html>
