@@ -1,0 +1,76 @@
+﻿<?php
+
+class Mahasiswa
+{
+    private $conn;
+    private $table = 'mahasiswa';
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function getAll()
+    {
+        $query = "SELECT * FROM " . $this->table . " ORDER BY id ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getById($id)
+    {
+        $query = "SELECT * FROM " . $this->table . " WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function create($data)
+    {
+        $query = "INSERT INTO " . $this->table . "
+                  (nim, nama, prodi)
+                  VALUES (:nim, :nama, :prodi)";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':nim', $data['nim']);
+        $stmt->bindParam(':nama', $data['nama']);
+        $stmt->bindParam(':prodi', $data['prodi']);
+
+        return $stmt->execute();
+    }
+
+    public function update($id, $data)
+    {
+        $query = "UPDATE " . $this->table . "
+                  SET nim = :nim,
+                      nama = :nama,
+                      prodi = :prodi
+                  WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':nim', $data['nim']);
+        $stmt->bindParam(':nama', $data['nama']);
+        $stmt->bindParam(':prodi', $data['prodi']);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    public function delete($id)
+    {
+        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+}

@@ -1,0 +1,272 @@
+﻿openapi: 3.0.3
+
+info:
+  title: API Mahasiswa - Acara 22
+  description: Dokumentasi REST API Mahasiswa menggunakan PHP Native dan MySQL.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/BKPM%20WORKSHOP%20SISTEM%20INFORMASI%20WEB%20SERVER/ACARA%2022%20Dokumentasi%20Endpoint/public
+    description: Local Development Server
+
+tags:
+  - name: Authentication
+    description: Endpoint registrasi dan login pengguna
+  - name: Mahasiswa
+    description: Pengelolaan data mahasiswa
+
+paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Registrasi pengguna baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registrasi berhasil
+        '400':
+          description: Data registrasi tidak lengkap
+        '409':
+          description: Username atau email sudah digunakan
+
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Login pengguna
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login berhasil dan token JWT diberikan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Username dan password wajib diisi
+        '401':
+          description: Username atau password salah
+
+  /mahasiswa:
+    get:
+      tags:
+        - Mahasiswa
+      summary: Mengambil seluruh data mahasiswa
+      responses:
+        '200':
+          description: Data mahasiswa berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MahasiswaListResponse'
+
+    post:
+      tags:
+        - Mahasiswa
+      summary: Menambahkan data mahasiswa
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MahasiswaRequest'
+      responses:
+        '201':
+          description: Data mahasiswa berhasil ditambahkan
+        '400':
+          description: Data mahasiswa tidak lengkap
+        '401':
+          description: Token tidak ditemukan atau tidak valid
+        '409':
+          description: NIM sudah digunakan
+
+  /mahasiswa/{id}:
+    put:
+      tags:
+        - Mahasiswa
+      summary: Memperbarui data mahasiswa
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID mahasiswa yang akan diperbarui
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MahasiswaRequest'
+      responses:
+        '200':
+          description: Data mahasiswa berhasil diperbarui
+        '400':
+          description: Data mahasiswa tidak lengkap
+        '401':
+          description: Token tidak ditemukan atau tidak valid
+        '404':
+          description: Data mahasiswa tidak ditemukan
+        '409':
+          description: NIM sudah digunakan
+
+    delete:
+      tags:
+        - Mahasiswa
+      summary: Menghapus data mahasiswa
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID mahasiswa yang akan dihapus
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Data mahasiswa berhasil dihapus
+        '401':
+          description: Token tidak ditemukan atau tidak valid
+        '404':
+          description: Data mahasiswa tidak ditemukan
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: faul22
+        email:
+          type: string
+          format: email
+          example: faul22@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: admin22
+        password:
+          type: string
+          format: password
+          example: password123
+
+    MahasiswaRequest:
+      type: object
+      required:
+        - nim
+        - nama
+        - prodi
+      properties:
+        nim:
+          type: string
+          example: '260220004'
+        nama:
+          type: string
+          example: Faul Mahasiswa
+        prodi:
+          type: string
+          example: Teknik Informatika
+
+    LoginResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login berhasil
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiJ9...
+            token_type:
+              type: string
+              example: Bearer
+            expires_in:
+              type: integer
+              example: 3600
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                username:
+                  type: string
+                  example: admin22
+                email:
+                  type: string
+                  example: admin22@localhost.test
+                role:
+                  type: string
+                  example: admin
+
+    MahasiswaListResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data mahasiswa berhasil diambil
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              nim:
+                type: string
+                example: '260220001'
+              nama:
+                type: string
+                example: Budi Santoso
+              prodi:
+                type: string
+                example: Teknik Informatika
+              created_at:
+                type: string
+                format: date-time

@@ -36,7 +36,22 @@ class Router
     public function run()
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
-        $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        $requestUri = rawurldecode(
+            parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
+        );
+
+        $basePath = rawurldecode(
+            str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']))
+        );
+
+        if ($basePath !== '/' && $basePath !== '.') {
+            if (strpos($requestUri, $basePath) === 0) {
+                $requestUri = substr($requestUri, strlen($basePath));
+            }
+        }
+
+        $requestUri = '/' . trim($requestUri, '/');
 
         foreach ($this->routes as $route) {
             $pattern = preg_replace(
@@ -62,11 +77,6 @@ class Router
             }
         }
 
-        http_response_code(404);
-
-        echo json_encode([
-            'status' => false,
-            'message' => 'Endpoint tidak ditemukan'
-        ]);
+        Response::error('Endpoint tidak ditemukan', 404);
     }
 }
