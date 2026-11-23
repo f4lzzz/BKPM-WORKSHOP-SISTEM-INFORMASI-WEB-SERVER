@@ -1,10 +1,10 @@
 ﻿
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="utf-8">
+<head><meta charset="utf-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Mahasiswa - ACARA 28</title>
+    <title>Tambah Mahasiswa - ACARA 29</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -39,16 +39,24 @@
 
                 <div class="mb-3">
                     <label for="foto" class="form-label">Foto Mahasiswa</label>
-                    <input type="file" id="foto" class="form-control"
-                        accept=".jpg,.jpeg,.png,image/jpeg,image/png">
-                    <small class="text-muted">Format JPG/PNG, maksimal 2 MB.</small>
+                    <input
+                        type="file"
+                        id="foto"
+                        class="form-control"
+                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    >
+                    <small class="text-muted">
+                        Format JPG/PNG, maksimal 2 MB.
+                    </small>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="btnSimpan">
                     Simpan Data
                 </button>
 
-                <a href="dashboard.html" class="btn btn-secondary">Kembali</a>
+                <a href="dashboard.html" class="btn btn-secondary">
+                    Kembali
+                </a>
             </form>
         </div>
     </div>
@@ -67,7 +75,6 @@ function tampilkanNotifikasi(pesan, jenis) {
     const alert = document.createElement("div");
     alert.className = `alert alert-${jenis} alert-dismissible fade show`;
     alert.setAttribute("role", "alert");
-
     alert.appendChild(document.createTextNode(pesan));
 
     const tombol = document.createElement("button");
@@ -104,8 +111,22 @@ function validasiInput() {
     return valid && form.checkValidity();
 }
 
+async function bacaRespons(response) {
+    const teks = await response.text();
+
+    try {
+        return teks ? JSON.parse(teks) : {};
+    } catch {
+        throw new Error("Respons server tidak valid.");
+    }
+}
+
 form.addEventListener("submit", async function(e) {
     e.preventDefault();
+
+    if (btnSimpan.disabled) {
+        return;
+    }
 
     if (!validasiInput()) {
         tampilkanNotifikasi(
@@ -122,6 +143,11 @@ form.addEventListener("submit", async function(e) {
             "Sesi login tidak ditemukan. Silakan login kembali.",
             "danger"
         );
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1500);
+
         return;
     }
 
@@ -131,17 +157,24 @@ form.addEventListener("submit", async function(e) {
         const ekstensiValid = ["image/jpeg", "image/png"];
 
         if (!ekstensiValid.includes(fileFoto.type)) {
-            tampilkanNotifikasi("Foto harus berformat JPG atau PNG.", "danger");
+            tampilkanNotifikasi(
+                "Foto harus berformat JPG atau PNG.",
+                "danger"
+            );
             return;
         }
 
         if (fileFoto.size > 2 * 1024 * 1024) {
-            tampilkanNotifikasi("Ukuran foto maksimal 2 MB.", "danger");
+            tampilkanNotifikasi(
+                "Ukuran foto maksimal 2 MB.",
+                "danger"
+            );
             return;
         }
     }
 
     const formData = new FormData();
+
     formData.append("nim", document.getElementById("nim").value);
     formData.append("nama", document.getElementById("nama").value);
     formData.append("prodi", document.getElementById("prodi").value);
@@ -162,10 +195,29 @@ form.addEventListener("submit", async function(e) {
             body: formData
         });
 
-        const hasil = await response.json();
+        const hasil = await bacaRespons(response);
+
+        if (response.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("username");
+
+            tampilkanNotifikasi(
+                "Sesi login telah berakhir. Silakan login kembali.",
+                "warning"
+            );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1500);
+
+            return;
+        }
 
         if (!response.ok || !hasil.success) {
-            throw new Error(hasil.message || "Gagal menambahkan data mahasiswa.");
+            throw new Error(
+                hasil.message || "Gagal menambahkan data mahasiswa."
+            );
         }
 
         tampilkanNotifikasi(
@@ -177,10 +229,15 @@ form.addEventListener("submit", async function(e) {
         form.classList.remove("was-validated");
 
     } catch (error) {
+        console.error("Kesalahan tambah mahasiswa:", error);
+
         tampilkanNotifikasi(
-            "Gagal menambahkan data: " + error.message,
+            error instanceof TypeError
+                ? "Koneksi jaringan bermasalah. Data belum dapat dipastikan tersimpan. Periksa dashboard sebelum mencoba lagi."
+                : "Gagal menambahkan data: " + error.message,
             "danger"
         );
+
     } finally {
         btnSimpan.disabled = false;
         btnSimpan.textContent = "Simpan Data";
