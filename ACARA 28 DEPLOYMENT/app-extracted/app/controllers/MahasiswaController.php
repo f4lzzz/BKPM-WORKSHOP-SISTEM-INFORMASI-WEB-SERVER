@@ -81,7 +81,9 @@ class MahasiswaController
             Response::error(422, "Ukuran foto maksimal 2MB");
         }
 
-        $ekstensi = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+        $ekstensi = strtolower(
+            pathinfo($file["name"], PATHINFO_EXTENSION)
+        );
 
         if (!in_array($ekstensi, ["jpg", "jpeg", "png"])) {
             Response::error(422, "Foto harus berformat JPG atau PNG");
@@ -115,21 +117,34 @@ class MahasiswaController
         }
 
         $namaBaru = uniqid("foto_", true) . "." . $ekstensi;
+        $pathFoto = $this->folderUpload . $namaBaru;
 
         if (is_uploaded_file($file["tmp_name"])) {
             $fileTersimpan = move_uploaded_file(
                 $file["tmp_name"],
-                $this->folderUpload . $namaBaru
+                $pathFoto
             );
         } else {
             $fileTersimpan = rename(
                 $file["tmp_name"],
-                $this->folderUpload . $namaBaru
+                $pathFoto
             );
         }
 
         if (!$fileTersimpan) {
             Response::error(500, "Gagal menyimpan foto");
+        }
+
+        // Mengatur permission foto secara otomatis menjadi 0644
+        if (!@chmod($pathFoto, 0644)) {
+            @unlink($pathFoto);
+            Response::error(500, "Gagal mengatur permission foto");
+        }
+
+        // Memastikan foto dapat dibaca oleh server
+        if (!is_readable($pathFoto)) {
+            @unlink($pathFoto);
+            Response::error(500, "Foto tidak dapat dibaca oleh server");
         }
 
         return $namaBaru;
