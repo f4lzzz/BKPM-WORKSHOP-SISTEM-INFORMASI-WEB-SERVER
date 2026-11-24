@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: Sistem Informasi Akademik API
+  version: 1.0.0
+  description: >
+    Dokumentasi API produksi berdasarkan implementasi PHP Native MVC.
+    Autentikasi menggunakan JWT HS256 dengan masa berlaku 3600 detik.
+servers:
+  - url: https://faulacara28.my.id
+    description: Server produksi
+tags:
+  - name: Authentication
+  - name: Mahasiswa
+paths:
+  /register:
+    post:
+      tags: [Authentication]
+      summary: Registrasi pengguna
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  example: pengguna
+                email:
+                  type: string
+                  format: email
+                  example: pengguna@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  example: rahasia123
+      responses:
+        "200":
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "400":
+          description: Data wajib diisi atau format tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Username/email sudah terdaftar atau data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /login:
+    post:
+      tags: [Authentication]
+      summary: Login dan memperoleh JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: password
+      responses:
+        "200":
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login berhasil
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: JWT dengan masa berlaku 3600 detik
+                      role:
+                        type: string
+                        example: admin
+                      username:
+                        type: string
+                        example: admin
+        "400":
+          description: Username atau password wajib diisi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Kredensial salah
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /logout:
+    post:
+      tags: [Authentication]
+      summary: Memvalidasi token dan melakukan logout di sisi frontend
+      description: >
+        Server memvalidasi token dan mengirim pesan agar frontend menghapus token.
+        Implementasi ini tidak mencabut token di server; token tetap berlaku sampai kedaluwarsa.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logout berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "401":
+          description: Token tidak ditemukan, tidak valid, atau kedaluwarsa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /mahasiswa:
+    get:
+      tags: [Mahasiswa]
+      summary: Mengambil seluruh data mahasiswa atau satu data berdasarkan ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID mahasiswa. Jika tidak diberikan, seluruh data dikembalikan.
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Data berhasil diambil
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/MahasiswaListResponse"
+                  - $ref: "#/components/schemas/MahasiswaSingleResponse"
+        "400":
+          description: ID tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Token tidak valid atau tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Data mahasiswa tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Gagal mengambil data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Mahasiswa]
+      summary: Menambahkan mahasiswa
+      description: Hanya admin. Foto opsional, JPG/JPEG/PNG, maksimal 2 MB.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [nim, nama, prodi]
+              properties:
+                nim:
+                  type: string
+                  example: E41250001
+                nama:
+                  type: string
+                  example: Contoh Mahasiswa
+                prodi:
+                  type: string
+                  example: Teknik Informatika
+                foto:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Data berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "400":
+          description: Field wajib belum diisi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Token tidak valid atau tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Hanya admin yang diizinkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: NIM duplikat atau data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validasi foto gagal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Kesalahan penyimpanan foto atau konfigurasi server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [Mahasiswa]
+      summary: Memperbarui mahasiswa
+      description: Hanya admin. Foto opsional; jika tidak dikirim, foto lama dipertahankan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [nim, nama, prodi]
+              properties:
+                nim:
+                  type: string
+                  example: E41250001
+                nama:
+                  type: string
+                  example: Nama Diperbarui
+                prodi:
+                  type: string
+                  example: Teknik Informatika
+                foto:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Data berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "400":
+          description: ID atau field tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Token tidak valid atau tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Hanya admin yang diizinkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Data mahasiswa tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: NIM sudah digunakan atau data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validasi foto gagal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [Mahasiswa]
+      summary: Menghapus mahasiswa
+      description: Hanya admin.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Data berhasil dihapus
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "400":
+          description: ID tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Token tidak valid atau tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Hanya admin yang diizinkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Data mahasiswa tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Gagal menghapus data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /mahasiswa/update:
+    post:
+      tags: [Mahasiswa]
+      summary: Alternatif endpoint untuk memperbarui mahasiswa
+      description: >
+        Route alternatif yang terdaftar di router. Menggunakan query id dan
+        multipart/form-data. Hanya admin.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [nim, nama, prodi]
+              properties:
+                nim:
+                  type: string
+                nama:
+                  type: string
+                prodi:
+                  type: string
+                foto:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Data berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicResponse"
+        "400":
+          description: ID atau field tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Token tidak valid atau tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Hanya admin yang diizinkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Data mahasiswa tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: NIM sudah digunakan atau data tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    BasicResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operasi berhasil
+        data:
+          nullable: true
+          example: null
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Terjadi kesalahan
+        data:
+          nullable: true
+          example: null
+    Mahasiswa:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nim:
+          type: string
+          example: E41250001
+        nama:
+          type: string
+          example: Contoh Mahasiswa
+        prodi:
+          type: string
+          example: Teknik Informatika
+        foto:
+          type: string
+          nullable: true
+          example: foto_contoh.jpg
+    MahasiswaSingleResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data mahasiswa berhasil diambil
+        data:
+          $ref: "#/components/schemas/Mahasiswa"
+    MahasiswaListData:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 1
+        mahasiswa:
+          type: array
+          items:
+            $ref: "#/components/schemas/Mahasiswa"
+    MahasiswaListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data mahasiswa berhasil diambil
+        data:
+          $ref: "#/components/schemas/MahasiswaListData"
